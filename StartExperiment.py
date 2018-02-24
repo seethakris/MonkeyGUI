@@ -92,7 +92,7 @@ class Experiment(object):
     def realtime_elapsedtime(self, rewardloc, elapsedtime, robotloc):
         """ Plot elapsed time, current robot location and reward location. Plot every refresh rate """
         locationmap = copy(self.map)
-        cv2.circle(locationmap, (rewardloc['x'], rewardloc['y']), 50, (0, 0, 255), 20)
+        cv2.circle(locationmap, (rewardloc['x'], rewardloc['y']), 50, (0, 0, 255), 15)
         cv2.putText(locationmap, 'Time : %0.4f' % elapsedtime, (20, 200), cv2.FONT_HERSHEY_SIMPLEX,
                     4, (0, 0, 0), 6, cv2.LINE_AA)
         cv2.putText(locationmap, '*', robotloc, cv2.FONT_HERSHEY_SIMPLEX,
