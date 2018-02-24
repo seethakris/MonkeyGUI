@@ -31,6 +31,9 @@ class Experiment(object):
         self.numtrials = NumberOfTrials
         self.rewardtimeout = RewardTimeOut
         self._currenttrial = 0  # Trial number
+        fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+        self.outavi = cv2.VideoWriter('output.avi', fourcc, 20.0, (np.size(self.map, 1), np.size(self.map, 0)))
+
         self.start_experiment()
 
     def plot_saved_location(self):
@@ -87,6 +90,8 @@ class Experiment(object):
 
             print('\n Trial Ended')
             cv2.destroyAllWindows()
+            self.outavi.release()
+            core.wait(5)
             self.updatetrial()  # Trial ended - start of next trial
 
     def realtime_elapsedtime(self, rewardloc, elapsedtime, robotloc):
@@ -98,7 +103,7 @@ class Experiment(object):
         cv2.putText(locationmap, '*', robotloc, cv2.FONT_HERSHEY_SIMPLEX,
                     5, (0, 0, 255), 6, cv2.LINE_AA)
         cv2.imshow('Trial %d Reward' % self._currenttrial, locationmap)
-
+        self.outavi.write(locationmap)
         # waitKey(Delay) in milliseconds
         # HighGui functions like imshow() need a call of waitKey, in order to process its event loop.
         # Plotting will be at refresh rate. Will not affect timing
