@@ -63,32 +63,61 @@ class Experiment(object):
             print ('Go to reward location (%d, %d)' % (currentrewardlocation['x'], currentrewardlocation['y']))
             self.plotrewardlocation(currentrewardlocation)
 
+            # Set up plot for realtime plotting
+            cv2.namedWindow('Trial %d Reward' % self._currenttrial, cv2.WINDOW_NORMAL)
+            cv2.resizeWindow('Trial %d Reward' % self._currenttrial, 600, 600)
+
+            # Get initial location of robot
+            loc_x, loc_y = self.get_random_xy_loc(currentrewardlocation)
+
             # Start timer for reward timeout
             timer = core.CountdownTimer(self.rewardtimeout)
             abstime = core.MonotonicClock()
-            while timer.getTime() > 0:
-                # Check Location of animal - link to the callback function here
 
-                # Print elapsed time
+            while timer.getTime() > 0:
+                # Print elapsed time on map and console
+                # Change location for testing purposes
+                loc_x += 1
+                loc_y += 1
                 elapsedtime = abstime.getTime()
+                self.realtime_elapsedtime(rewardloc=currentrewardlocation,
+                                          elapsedtime=elapsedtime, robotloc=(loc_x, loc_y))
                 print "\033[K Elapsed Time : ", elapsedtime, "\r",
                 sys.stdout.flush()
 
             print('\n Trial Ended')
+            cv2.destroyAllWindows()
             self.updatetrial()  # Trial ended - start of next trial
+
+    def realtime_elapsedtime(self, rewardloc, elapsedtime, robotloc):
+        """ Plot elapsed time, current robot location and reward location. Plot every refresh rate """
+        locationmap = copy(self.map)
+        cv2.circle(locationmap, (rewardloc['x'], rewardloc['y']), 50, (0, 0, 255), 20)
+        cv2.putText(locationmap, 'Time : %0.4f' % elapsedtime, (20, 200), cv2.FONT_HERSHEY_SIMPLEX,
+                    4, (0, 0, 0), 6, cv2.LINE_AA)
+        cv2.putText(locationmap, '*', robotloc, cv2.FONT_HERSHEY_SIMPLEX,
+                    5, (0, 0, 255), 6, cv2.LINE_AA)
+        cv2.imshow('Trial %d Reward' % self._currenttrial, locationmap)
+
+        # waitKey(Delay) in milliseconds
+        # HighGui functions like imshow() need a call of waitKey, in order to process its event loop.
+        # Plotting will be at refresh rate. Will not affect timing
+        cv2.waitKey(1)
 
     def plotrewardlocation(self, rewardloc):
         """ Plot the reward location on the Map"""
         locationmap = copy(self.map)
         cv2.namedWindow('Trial %d Reward' % self._currenttrial, cv2.WINDOW_NORMAL)
-        cv2.circle(locationmap, (rewardloc['x'], rewardloc['y']), 50, (0, 0, 255), -1)
+        cv2.circle(locationmap, (rewardloc['x'], rewardloc['y']), 50, (0, 0, 255), 20)
         cv2.imshow('Trial %d Reward' % self._currenttrial, locationmap)
-        cv2.waitKey(5000)  # Show plot for 5 seconds
+        cv2.waitKey(2000)  # Show plot for 5 seconds
         cv2.destroyAllWindows()
 
-    def get_random_xy_loc(self):
-        x = np.random.randint(np.size(self.map, 1))
-        y = np.random.randint(np.size(self.map, 0))
+    def get_random_xy_loc(self, rewardloc):
+        """ For testing : Randomly generate an x and y position for the robot
+        that is around the chosen reward"""
+        x = np.random.randint(rewardloc['x'] - 200, rewardloc['x'] + 200)
+        y = np.random.randint(rewardloc['y'] - 200, rewardloc['y'] + 200)
 
         return x, y
 
